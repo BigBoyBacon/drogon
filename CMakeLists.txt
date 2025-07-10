@@ -5,7 +5,7 @@ project(drogon)
 message(STATUS "compiler: " ${CMAKE_CXX_COMPILER_ID})
 
 option(BUILD_CTL "Build drogon_ctl" ON)
-option(BUILD_EXAMPLES "Build examples" ON)
+option(BUILD_EXAMPLES "Build examples" OFF)
 option(BUILD_ORM "Build orm" ON)
 option(COZ_PROFILING "Use coz for profiling" OFF)
 option(BUILD_SHARED_LIBS "Build drogon as a shared lib" OFF)
@@ -13,10 +13,10 @@ option(BUILD_DOC "Build Doxygen documentation" OFF)
 option(BUILD_BROTLI "Build Brotli" ON)
 option(BUILD_YAML_CONFIG "Build yaml config" ON)
 option(USE_SUBMODULE "Use trantor as a submodule" ON)
-option(USE_STATIC_LIBS_ONLY "Use only static libraries as dependencies" OFF)
+option(USE_STATIC_LIBS_ONLY "Use only static libraries as dependencies" ON)
 
 include(CMakeDependentOption)
-CMAKE_DEPENDENT_OPTION(BUILD_POSTGRESQL "Build with postgresql support" ON "BUILD_ORM" OFF)
+CMAKE_DEPENDENT_OPTION(BUILD_POSTGRESQL "Build with postgresql support" OFF "BUILD_ORM" OFF)
 CMAKE_DEPENDENT_OPTION(LIBPQ_BATCH_MODE "Use batch mode for libpq" ON "BUILD_POSTGRESQL" OFF)
 CMAKE_DEPENDENT_OPTION(BUILD_MYSQL "Build with mysql support" ON "BUILD_ORM" OFF)
 CMAKE_DEPENDENT_OPTION(BUILD_SQLITE "Build with sqlite3 support" ON "BUILD_ORM" OFF)
@@ -31,6 +31,14 @@ set(DROGON_VERSION
 set(DROGON_VERSION_STRING "${DROGON_VERSION}")
 
 include(GNUInstallDirs)
+#设置安装位置
+# 获取当前CMakeLists.txt所在目录的上两级目录
+get_filename_component(PARENT_DIR ${CMAKE_CURRENT_LIST_DIR} DIRECTORY)
+get_filename_component(GRANDPARENT_DIR ${PARENT_DIR} DIRECTORY)
+# 设置安装目录为上两级目录下的install文件夹
+set(CMAKE_INSTALL_PREFIX "${GRANDPARENT_DIR}/3dParty/install/${PROJECT_NAME}" CACHE PATH "Install path prefix" FORCE)
+message(STATUS "Install prefix set to: ${CMAKE_INSTALL_PREFIX}")
+
 # Offer the user the choice of overriding the installation directories
 set(INSTALL_LIB_DIR ${CMAKE_INSTALL_LIBDIR} CACHE PATH "Installation directory for libraries")
 set(INSTALL_BIN_DIR ${CMAKE_INSTALL_BINDIR} CACHE PATH "Installation directory for executables")
@@ -187,8 +195,8 @@ endif()
 
 
 # jsoncpp
-find_package(Jsoncpp REQUIRED)
-target_link_libraries(${PROJECT_NAME} PUBLIC Jsoncpp_lib)
+find_package(jsoncpp REQUIRED)
+target_link_libraries(${PROJECT_NAME} PUBLIC JsonCpp::JsonCpp)
 list(APPEND INCLUDE_DIRS_FOR_DYNAMIC_VIEW ${JSONCPP_INCLUDE_DIRS})
 
 # yamlcpp
@@ -242,12 +250,12 @@ endif (NOT ${CMAKE_SYSTEM_NAME} STREQUAL "FreeBSD"
     AND NOT WIN32)
 
 if (BUILD_BROTLI)
-    find_package(Brotli)
-    if (Brotli_FOUND)
+    find_package(brotli)
+    if (brotli_FOUND)
         message(STATUS "Brotli found")
         add_definitions(-DUSE_BROTLI)
-        target_link_libraries(${PROJECT_NAME} PRIVATE Brotli_lib)
-    endif (Brotli_FOUND)
+        target_link_libraries(${PROJECT_NAME} PRIVATE brotli::brotli)
+    endif (brotli_FOUND)
 endif (BUILD_BROTLI)
 
 set(DROGON_SOURCES
@@ -439,7 +447,7 @@ if (BUILD_SQLITE)
     find_package(SQLite3 QUIET)
     find_package(unofficial-sqlite3 QUIET)
     if (SQLite3_FOUND)
-        target_link_libraries(${PROJECT_NAME} PRIVATE SQLite3_lib)
+        target_link_libraries(${PROJECT_NAME} PRIVATE SQLite::SQLite3)
         set(DROGON_FOUND_SQLite3 TRUE)
     elseif (unofficial-sqlite3_FOUND)
         target_link_libraries(${PROJECT_NAME} PRIVATE unofficial::sqlite3::sqlite3)
@@ -795,14 +803,14 @@ write_basic_package_version_file(
 install(FILES
     "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/DrogonConfig.cmake"
     "${CMAKE_CURRENT_BINARY_DIR}/DrogonConfigVersion.cmake"
-    "${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules/FindUUID.cmake"
-    "${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules/FindJsoncpp.cmake"
-    "${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules/FindSQLite3.cmake"
-    "${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules/FindMySQL.cmake"
-    "${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules/Findpg.cmake"
-    "${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules/FindBrotli.cmake"
+    # "${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules/FindUUID.cmake"
+    # "${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules/FindJsoncpp.cmake"
+    # "${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules/FindSQLite3.cmake"
+    # "${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules/FindMySQL.cmake"
+    # "${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules/Findpg.cmake"
+    # "${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules/FindBrotli.cmake"
     "${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules/Findcoz-profiler.cmake"
-    "${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules/FindHiredis.cmake"
+    # "${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules/FindHiredis.cmake"
     "${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules/FindFilesystem.cmake"
     "${CMAKE_CURRENT_SOURCE_DIR}/cmake/DrogonUtilities.cmake"
     "${CMAKE_CURRENT_SOURCE_DIR}/cmake/ParseAndAddDrogonTests.cmake"
