@@ -13,6 +13,7 @@ class ExampleRecipe(ConanFile):
         # self.requires("gtest/1.10.0")
         self.requires("sqlite3/3.40.1")
         # self.requires("libpq/13.2")
+        self.requires("libpq/15.12")
         self.requires("openssl/1.1.1t")
         # self.requires("hiredis/1.0.0")
         self.requires("brotli/1.0.9")
